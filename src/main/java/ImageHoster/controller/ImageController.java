@@ -1,8 +1,10 @@
 package ImageHoster.controller;
 
+import ImageHoster.model.Comment;
 import ImageHoster.model.Image;
 import ImageHoster.model.Tag;
 import ImageHoster.model.User;
+import ImageHoster.service.CommentService;
 import ImageHoster.service.ImageService;
 import ImageHoster.service.TagService;
 import ImageHoster.service.UserService;
@@ -25,6 +27,9 @@ public class ImageController {
 
     @Autowired
     private ImageService imageService;
+    
+    @Autowired
+    private CommentService commentService;
 
     @Autowired
     private TagService tagService;
@@ -51,9 +56,12 @@ public class ImageController {
     public String showImage(@PathVariable("id") Integer id, String title, Model model) {
         //Image image = imageService.getImageByTitle(title);
     	Image image = imageService.getImage(id);
+    	Comment comments = commentService.getCommentsById(id); 
         model.addAttribute("image", image);
+        model.addAttribute("comments", comments);
         model.addAttribute("title", image.getTitle());
         model.addAttribute("tags", image.getTags());
+        
         return "images/image";
     }
 
@@ -100,6 +108,7 @@ public class ImageController {
     						@RequestParam("userId") Integer userId,
     						Model model) {
         Image image = imageService.getImage(imageId);
+        Comment comments = commentService.getCommentsById(imageId);
         
         String tags = convertTagsToString(image.getTags());
         model.addAttribute("image", image);
@@ -108,7 +117,9 @@ public class ImageController {
         	model.addAttribute("editError", false);
         	return "images/edit";	
         }
+        model.addAttribute("comments", comments);
         model.addAttribute("editError", true);
+        
         return "images/image";
     }
 
@@ -154,7 +165,9 @@ public class ImageController {
     public String deleteImageSubmit(@RequestParam(name = "imageId") Integer imageId,
     								@RequestParam(name = "userId") Integer userId, Model model) {
     	Image image = imageService.getImage(imageId);
+    	Comment comments = commentService.getCommentsById(imageId);    	
     	String tags = convertTagsToString(image.getTags());
+    	
         model.addAttribute("image", image);
         model.addAttribute("tags", tags);
         
@@ -163,11 +176,30 @@ public class ImageController {
         	imageService.deleteImage(imageId);
             return "redirect:/images";	
         }
+    	model.addAttribute("comments", comments);
         model.addAttribute("deleteError", true);
         return "images/image";
     	
     }
 
+    @RequestMapping(value = "/image/{imageId}/{imageTitle}/comments", method = RequestMethod.POST)
+    public String uploadCommentSubmit(@PathVariable(value="imageId") Integer imageId,
+    								  @PathVariable(value="imageTitle") String imageTitle,
+    								  @RequestParam(name = "comment") String comment, Comment newComment, Model model, HttpSession session) {
+    	User user = (User) session.getAttribute("loggeduser");
+    	Image image = imageService.getImage(imageId);
+    	
+    	newComment.setText(comment);
+    	newComment.setCreatedDate(new Date());
+    	newComment.setUser(user);
+    	newComment.setImage(image);
+    	
+    	commentService.uploadComment(newComment);
+    	
+    	model.addAttribute("image", image);
+    	
+    	return "redirect:/images/image" + showImage(imageId, imageTitle, model);
+    }
 
     //This method converts the image to Base64 format
     private String convertUploadedFileToBase64(MultipartFile file) throws IOException {
