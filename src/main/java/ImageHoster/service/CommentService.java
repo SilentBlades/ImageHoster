@@ -1,19 +1,24 @@
 package ImageHoster.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.List;
 
-import ImageHoster.model.Comment;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import ImageHoster.model.Comments;
+import ImageHoster.model.Image;
 import ImageHoster.repository.CommentRepository;
 
+@Service
 public class CommentService {
 	@Autowired
 	private CommentRepository commentRepository;
 	
-	public Comment getCommentsById(Integer imageId) {
-		return commentRepository.getCommentsById(imageId);
+	public List<Comments> getAllComments(Image image) {
+		return commentRepository.getAllComments(image);
 	}
 	
-	public void uploadComment(Comment newComment) {
+	public void uploadComment(Comments newComment) {
 		commentRepository.uploadComment(newComment);
 	}
 }

@@ -14,7 +14,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "comments")
-public class Comment {
+public class Comments {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Column(name = "id")
@@ -34,9 +34,9 @@ public class Comment {
 	@JoinColumn(name = "image_id")
 	private Image image;
 	
-	public Comment() {}
+	public Comments() {}
 	
-	public Comment(int id, String text, Date createdDate, User user, Image image) {
+	public Comments(int id, String text, Date createdDate, User user, Image image) {
 		this.id = id;
 		this.text = text;
 		this.createdDate = createdDate;
